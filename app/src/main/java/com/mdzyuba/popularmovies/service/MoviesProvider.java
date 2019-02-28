@@ -14,7 +14,7 @@ public class MoviesProvider {
 
     private static final String TAG = MoviesProvider.class.getSimpleName();
 
-    private NetworkDataProvider networkDataProvider;
+    private final NetworkDataProvider networkDataProvider;
 
     public MoviesProvider(NetworkDataProvider networkDataProvider) {
         this.networkDataProvider = networkDataProvider;

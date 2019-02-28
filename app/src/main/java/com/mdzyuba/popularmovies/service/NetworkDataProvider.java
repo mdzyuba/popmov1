@@ -1,7 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,15 +10,12 @@ import java.util.Scanner;
 
 public class NetworkDataProvider {
 
-    public static final String DELIMITER = "\\A";
+    private static final String DELIMITER = "\\A";
 
-    @VisibleForTesting
     @Nullable
-    String getResponseFromHttpUrl(URL url) throws IOException {
+    public String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
-            InputStream in = urlConnection.getInputStream();
-
+        try (InputStream in = urlConnection.getInputStream())  {
             Scanner scanner = new Scanner(in);
             scanner.useDelimiter(DELIMITER);
 

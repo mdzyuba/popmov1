@@ -38,7 +38,8 @@ public class Movie {
         return posterPath;
     }
 
-    public void setPosterPath(String posterPath) {
+    public void setPosterPath(@Nullable String posterPath) {
         this.posterPath = posterPath;
     }
+
 }

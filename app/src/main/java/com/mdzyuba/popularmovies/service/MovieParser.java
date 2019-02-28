@@ -2,7 +2,6 @@ package com.mdzyuba.popularmovies.service;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 
 import com.mdzyuba.popularmovies.BuildConfig;
@@ -16,15 +15,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MovieParser {
+class MovieParser {
 
     private static final String TAG = MovieParser.class.getSimpleName();
     private static final String RESULTS = "results";
     private static final String POSTER_PATH = "poster_path";
 
-    @VisibleForTesting
     @NonNull
-    List<Movie> parsePopularMovies(@Nullable String json) {
+    public List<Movie> parsePopularMovies(@Nullable String json) {
         List<Movie> movies = new ArrayList<>();
         if (json == null) {
             return movies;
@@ -50,9 +48,8 @@ public class MovieParser {
         return movies;
     }
 
-    @VisibleForTesting
     @Nullable
-    Movie parseMovie(@Nullable JSONObject jsonMovie) {
+    private Movie parseMovie(@Nullable JSONObject jsonMovie) {
         if (jsonMovie == null) {
             return null;
         }

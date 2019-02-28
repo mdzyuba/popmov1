@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="not_available">Not Available</string>
+    <string name="movie_image">Movie Image</string>
 </resources>

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class TestDataUtils {
+class TestDataUtils {
 
     private static final String POPULAR_MOVIES_RESPONSE_JSON =
             "popular_movies_response.json";
