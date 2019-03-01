@@ -22,7 +22,7 @@ class MovieParser {
     private static final String POSTER_PATH = "poster_path";
 
     @NonNull
-    public List<Movie> parsePopularMovies(@Nullable String json) {
+    public List<Movie> parseMovies(@Nullable String json) {
         List<Movie> movies = new ArrayList<>();
         if (json == null) {
             return movies;

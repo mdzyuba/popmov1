@@ -21,7 +21,7 @@ public class MovieParserTest {
         assertNotNull("The json is null", json);
 
         MovieParser movieParser = new MovieParser();
-        List<Movie> movies = movieParser.parsePopularMovies(json);
+        List<Movie> movies = movieParser.parseMovies(json);
 
         resourceUtils.assertMoviesParsed(movies);
     }

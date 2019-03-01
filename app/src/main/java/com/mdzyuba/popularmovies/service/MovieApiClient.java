@@ -19,6 +19,7 @@ public class MovieApiClient {
     private static final String API_VERSION = "3";
     private static final String MOVIE = "movie";
     private static final String POPULAR = "popular";
+    private static final String TOP_RATED = "top_rated";
     private static final String API_KEY = "api_key";
     private static final String LANGUAGE = "language";
     private static final String EN_US = "en-US";
@@ -28,31 +29,32 @@ public class MovieApiClient {
     private static final String SIZE = "w185";
     private static final String IMAGE_PATH_SEPARATOR = "/";
 
-    @Nullable
+    @NonNull
     public URL buildGetPopularMoviesUrl() {
-        Uri uri = Uri.parse(THEMOVIEDB_ORG)
-                         .buildUpon()
-                         .appendPath(API_VERSION)
-                         .appendPath(MOVIE)
-                         .appendPath(POPULAR)
-                         .appendQueryParameter(API_KEY, BuildConfig.MOVIEDB_KEY)
-                         .appendQueryParameter(LANGUAGE, EN_US)
-                         .appendQueryParameter(PAGE, String.valueOf(1))
-                         .build();
+        return buildGerMovieUrl(POPULAR);
+    }
+
+    @NonNull
+    public URL buildGetTopRatedMoviesUrl() {
+        return buildGerMovieUrl(TOP_RATED);
+    }
+
+    @NonNull
+    private URL buildGerMovieUrl(String category) {
+        Uri uri = Uri.parse(THEMOVIEDB_ORG).buildUpon().appendPath(API_VERSION).appendPath(MOVIE)
+                     .appendPath(category).appendQueryParameter(API_KEY, BuildConfig.MOVIEDB_KEY)
+                     .appendQueryParameter(LANGUAGE, EN_US)
+                     .appendQueryParameter(PAGE, String.valueOf(1)).build();
         try {
             return new URL(uri.toString());
         } catch (MalformedURLException e) {
-            Log.e(TAG, e.getMessage(), e);
+            // Letting the app to crash for a coding error.
+            throw new RuntimeException("Failed creating a url: " + e.getMessage(), e);
         }
-        return null;
     }
 
     @Nullable
     public URL getImageUri(@NonNull String imagePath) {
-        if (imagePath == null) {
-            Log.e(TAG, "The image path should not be null");
-            return null;
-        }
         Uri.Builder builder = Uri.parse(IMAGE_BASE).buildUpon().appendPath(SIZE);
         for (String token : imagePath.split(IMAGE_PATH_SEPARATOR)) {
             builder.appendPath(token);

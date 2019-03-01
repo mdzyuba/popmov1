@@ -73,9 +73,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             Picasso picasso = picassoBuilder.build();
 
             String posterPath = movie.getPosterPath();
+            URL imageUrl = null;
             if (posterPath != null) {
-                URL imageUrl = movieApiClient.getImageUri(posterPath);
-                picasso.load(imageUrl.toString()).placeholder(R.drawable.image_placeholder).into(imageView);
+                imageUrl = movieApiClient.getImageUri(posterPath);
+            }
+            if (imageUrl != null) {
+                picasso.load(imageUrl.toString()).placeholder(R.drawable.image_placeholder)
+                       .into(imageView);
             } else {
                 Log.w(TAG, "The poster path is null");
                 picasso.load(R.drawable.image_placeholder).into(imageView);

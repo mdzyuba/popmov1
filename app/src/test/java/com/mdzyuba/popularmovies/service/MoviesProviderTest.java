@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 public class MoviesProviderTest {
 
     private TestDataUtils resourceUtils;
-    private MoviesProvider moviesProvider;
+    private PopularMoviesProvider moviesProvider;
 
     @Mock
     private NetworkDataProvider networkDataProvider;
@@ -28,14 +28,14 @@ public class MoviesProviderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         resourceUtils = new TestDataUtils();
-        moviesProvider = new MoviesProvider(networkDataProvider);
+        moviesProvider = new PopularMoviesProvider(networkDataProvider);
         String json = new TestDataUtils().readPopularMoviesJsonResponse();
         when(networkDataProvider.getResponseFromHttpUrl(Mockito.any(URL.class))).thenReturn(json);
     }
 
     @Test
     public void getPopularMovies() {
-        List<Movie> movies = moviesProvider.getPopularMovies();
+        List<Movie> movies = moviesProvider.getMovies();
         resourceUtils.assertMoviesParsed(movies);
     }
 }
