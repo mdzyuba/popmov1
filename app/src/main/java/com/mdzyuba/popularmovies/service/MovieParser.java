@@ -11,15 +11,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 class MovieParser {
 
     private static final String TAG = MovieParser.class.getSimpleName();
     private static final String RESULTS = "results";
     private static final String POSTER_PATH = "poster_path";
+    private static final String TITLE = "title";
+    public static final String OVERVIEW = "overview";
+    public static final String RELEASE_DATE = "release_date";
+    public static final String VOTE_AVERAGE = "vote_average";
 
     @NonNull
     public List<Movie> parseMovies(@Nullable String json) {
@@ -54,8 +62,36 @@ class MovieParser {
             return null;
         }
 
-        Movie movie = new Movie();
-        movie.setPosterPath(jsonMovie.optString(POSTER_PATH));
-        return movie;
+        Movie.Builder movieBuilder = new Movie.Builder();
+        String title = jsonMovie.optString(TITLE);
+        String posterPath = jsonMovie.optString(POSTER_PATH);
+        String overview = jsonMovie.optString(OVERVIEW);
+        String releaseDate = jsonMovie.optString(RELEASE_DATE);
+        String voteAverage = jsonMovie.optString(VOTE_AVERAGE);
+
+        movieBuilder
+                .withTitle(title)
+                .withPosterPath(posterPath)
+                .withOverview(overview);
+
+        if (releaseDate != null) {
+            movieBuilder.withReleaseDate(toDate(releaseDate));
+        }
+
+        if (voteAverage != null) {
+            movieBuilder.withVoteAverage(Float.parseFloat(voteAverage));
+        }
+
+        return movieBuilder.build();
+    }
+
+    protected Date toDate(String date) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            return dateFormat.parse(date);
+        } catch (ParseException e) {
+            Log.e(TAG, "Unable to parse thee release date: " + date);
+        }
+        return null;
     }
 }

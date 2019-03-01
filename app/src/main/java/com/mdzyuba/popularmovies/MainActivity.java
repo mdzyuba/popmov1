@@ -21,6 +21,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays a list of movie posters.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -30,8 +33,14 @@ public class MainActivity extends AppCompatActivity {
     private MoviesProvider moviesProvider;
     private RecyclerView movieListView;
     private MovieAdapter movieAdapter;
-    private List<Movie> movieList;
     private MoviesSelection moviesSelection;
+
+    private MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
+        @Override
+        public void onMovieClick(Movie movie) {
+            // TODO: navigate to the details activity and pass the movie
+        }
+    };
 
     enum MoviesSelection {
         MOST_POPULAR,
@@ -52,14 +61,12 @@ public class MainActivity extends AppCompatActivity {
         networkDataProvider = new NetworkDataProvider();
         moviesProvider = new PopularMoviesProvider(networkDataProvider);
 
-        movieList = new ArrayList<>();
-
         movieListView = findViewById(R.id.list_view);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS);
         movieListView.setLayoutManager(gridLayoutManager);
 
-        movieAdapter = new MovieAdapter(movieList);
+        movieAdapter = new MovieAdapter(movieClickListener);
         movieListView.setAdapter(movieAdapter);
         reloadMovies(moviesSelection);
     }
@@ -88,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void reloadMovies(@NonNull MoviesSelection selection) {
-        if (selection == moviesSelection && !movieList.isEmpty()) {
+        if (selection == moviesSelection && movieAdapter.getItemCount() > 0) {
             return;
         }
         moviesSelection = selection;
@@ -107,12 +114,6 @@ public class MainActivity extends AppCompatActivity {
         }
         InitPopularMoviesTask initPopularMoviesTask = new InitPopularMoviesTask(this);
         initPopularMoviesTask.execute();
-    }
-
-    private void updateMovies(List<Movie> movies) {
-        movieList.clear();
-        movieList.addAll(movies);
-        movieAdapter.notifyDataSetChanged();
     }
 
     @NonNull
@@ -143,7 +144,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Movie> movies) {
             MainActivity mainActivity = activityWeakReference.get();
             if (mainActivity != null) {
-                mainActivity.updateMovies(movies);
+                mainActivity.movieAdapter.updateMovies(movies);
+                mainActivity.movieListView.smoothScrollToPosition(0);
             }
         }
     }

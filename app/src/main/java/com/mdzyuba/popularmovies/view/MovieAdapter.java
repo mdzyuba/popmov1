@@ -15,6 +15,7 @@ import com.mdzyuba.popularmovies.service.MovieApiClient;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
@@ -23,8 +24,15 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     private final List<Movie> movieList;
 
-    public MovieAdapter(List<Movie> movieList) {
-        this.movieList = movieList;
+    private MovieClickListener movieClickListener;
+
+    public interface MovieClickListener {
+        void onMovieClick(Movie movie);
+    }
+
+    public MovieAdapter(@NonNull MovieClickListener movieClickListener) {
+        this.movieList = new ArrayList<>();
+        this.movieClickListener = movieClickListener;
     }
 
     @NonNull
@@ -54,12 +62,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         return movieList.size();
     }
 
-    class MovieViewHolder extends RecyclerView.ViewHolder {
+    public void updateMovies(List<Movie> movies) {
+        movieList.clear();
+        movieList.addAll(movies);
+        notifyDataSetChanged();
+    }
+
+    class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final ImageView imageView;
 
         MovieViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
+        }
+
+        @Override
+        public void onClick(View view) {
+            movieClickListener.onMovieClick(movieList.get(getAdapterPosition()));
         }
 
         void bind(@NonNull Movie movie) {

@@ -38,4 +38,5 @@ public class MoviesProviderTest {
         List<Movie> movies = moviesProvider.getMovies();
         resourceUtils.assertMoviesParsed(movies);
     }
+
 }
