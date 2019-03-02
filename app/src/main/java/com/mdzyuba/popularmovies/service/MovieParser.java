@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Locale;
 
 class MovieParser {
 
@@ -25,9 +25,9 @@ class MovieParser {
     private static final String RESULTS = "results";
     private static final String POSTER_PATH = "poster_path";
     private static final String TITLE = "title";
-    public static final String OVERVIEW = "overview";
-    public static final String RELEASE_DATE = "release_date";
-    public static final String VOTE_AVERAGE = "vote_average";
+    private static final String OVERVIEW = "overview";
+    private static final String RELEASE_DATE = "release_date";
+    private static final String VOTE_AVERAGE = "vote_average";
 
     @NonNull
     public List<Movie> parseMovies(@Nullable String json) {
@@ -85,9 +85,9 @@ class MovieParser {
         return movieBuilder.build();
     }
 
-    protected Date toDate(String date) {
+    Date toDate(String date) {
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             return dateFormat.parse(date);
         } catch (ParseException e) {
             Log.e(TAG, "Unable to parse thee release date: " + date);

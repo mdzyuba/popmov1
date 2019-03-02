@@ -9,7 +9,8 @@
         android:layout_height="wrap_content"
         android:scaleType="fitStart"
         android:adjustViewBounds="true"
-        android:contentDescription="@string/movie_image" />
+        android:contentDescription="@string/movie_image"
+        android:layout_margin="1dp" />
 
     <TextView
         android:id="@+id/text"

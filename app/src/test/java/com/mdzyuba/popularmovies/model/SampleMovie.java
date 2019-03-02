@@ -16,5 +16,5 @@ public class SampleMovie {
             "with an extraordinary past.";
     public static final Date RELEASE_DATE = new GregorianCalendar(2019, 0, 31).getTime();
     public static final String RELEASE_DATE_STRING = "2019-01-31";
-    public static final Float VOTE_AVERAGE = Float.valueOf(6.8f);
+    public static final Float VOTE_AVERAGE = 6.8f;
 }

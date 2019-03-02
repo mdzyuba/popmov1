@@ -1,6 +1,5 @@
 package com.mdzyuba.popularmovies.view;
 
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,10 +10,7 @@ import android.widget.ImageView;
 
 import com.mdzyuba.popularmovies.R;
 import com.mdzyuba.popularmovies.model.Movie;
-import com.mdzyuba.popularmovies.service.MovieApiClient;
-import com.squareup.picasso.Picasso;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +20,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     private final List<Movie> movieList;
 
-    private MovieClickListener movieClickListener;
+    private final MovieClickListener movieClickListener;
 
     public interface MovieClickListener {
         void onMovieClick(Movie movie);
@@ -42,9 +38,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         final boolean shouldAttachToParentImmediately = false;
         View view = layoutInflater
                 .inflate(R.layout.movie_view_item, parent, shouldAttachToParentImmediately);
-        MovieViewHolder moviesProvider = new MovieViewHolder(view);
-
-        return moviesProvider;
+        return new MovieViewHolder(view);
     }
 
     @Override
@@ -74,6 +68,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         MovieViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
+            imageView.setOnClickListener(this);
         }
 
         @Override
@@ -82,27 +77,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         }
 
         void bind(@NonNull Movie movie) {
-            MovieApiClient movieApiClient = new MovieApiClient();
-            Picasso.Builder picassoBuilder = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
-                @Override
-                public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                    Log.e(TAG, "Error loading an image: " + uri, exception);
-                }
-            });
-            Picasso picasso = picassoBuilder.build();
-
-            String posterPath = movie.getPosterPath();
-            URL imageUrl = null;
-            if (posterPath != null) {
-                imageUrl = movieApiClient.getImageUri(posterPath);
-            }
-            if (imageUrl != null) {
-                picasso.load(imageUrl.toString()).placeholder(R.drawable.image_placeholder)
-                       .into(imageView);
-            } else {
-                Log.w(TAG, "The poster path is null");
-                picasso.load(R.drawable.image_placeholder).into(imageView);
-            }
+            ImageUtil.loadImage(movie, imageView);
         }
     }
 }

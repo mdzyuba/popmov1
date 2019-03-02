@@ -11,7 +11,7 @@ import java.util.Objects;
 public class Movie implements Parcelable {
 
     private static final String TAG = Movie.class.getSimpleName();
-    public static final int UNDEFINED_VALUE = -1;
+    private static final int UNDEFINED_VALUE = -1;
 
     private final String title;
     private final String posterPath;
@@ -28,10 +28,10 @@ public class Movie implements Parcelable {
     private final Boolean video;
     private final Float voteAverage;
 
-    Movie(String title, String posterPath, Boolean adult, String overview, Date releaseDate,
-          Integer[] genreIDs, Integer id, String originalTitle, String originalLanguage,
-          String backdropPath, Integer popularity, Integer voteCount, Boolean video,
-          Float voteAverage) {
+    private Movie(String title, String posterPath, Boolean adult, String overview, Date releaseDate,
+                  Integer[] genreIDs, Integer id, String originalTitle, String originalLanguage,
+                  String backdropPath, Integer popularity, Integer voteCount, Boolean video,
+                  Float voteAverage) {
         this.title = title;
         this.posterPath = posterPath;
         this.adult = adult;
@@ -160,10 +160,9 @@ public class Movie implements Parcelable {
         }
 
         public Movie build() {
-            Movie movie = new Movie(title, posterPath, adult, overview, releaseDate, genreIDs, id,
-                                    originalTitle, originalLanguage, backdropPath, popularity,
-                                    voteCount, video, voteAverage);
-            return movie;
+            return new Movie(title, posterPath, adult, overview, releaseDate, genreIDs, id,
+                             originalTitle, originalLanguage, backdropPath, popularity,
+                             voteCount, video, voteAverage);
         }
     }
 
@@ -178,7 +177,7 @@ public class Movie implements Parcelable {
             dest.writeLong(UNDEFINED_VALUE);
         }
         if (voteAverage != null) {
-            dest.writeFloat(voteAverage.floatValue());
+            dest.writeFloat(voteAverage);
         } else {
             dest.writeFloat(UNDEFINED_VALUE);
         }

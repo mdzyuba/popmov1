@@ -17,10 +17,10 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(RobolectricTestRunner.class)
 public class MovieParserTest {
 
-    MovieParser movieParser;
+    private MovieParser movieParser;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         movieParser = new MovieParser();
     }
 

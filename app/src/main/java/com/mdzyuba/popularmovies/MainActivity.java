@@ -35,10 +35,10 @@ public class MainActivity extends AppCompatActivity {
     private MovieAdapter movieAdapter;
     private MoviesSelection moviesSelection;
 
-    private MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
+    private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
         @Override
         public void onMovieClick(Movie movie) {
-            // TODO: navigate to the details activity and pass the movie
+            startActivity(MovieDetailsActivity.createIntent(MainActivity.this, movie));
         }
     };
 
