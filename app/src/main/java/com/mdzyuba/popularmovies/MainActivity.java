@@ -1,5 +1,10 @@
 package com.mdzyuba.popularmovies;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,11 +17,12 @@ import android.view.MenuItem;
 
 import com.mdzyuba.popularmovies.model.Movie;
 import com.mdzyuba.popularmovies.service.MoviesProvider;
-import com.mdzyuba.popularmovies.service.PopularMoviesProvider;
 import com.mdzyuba.popularmovies.service.NetworkDataProvider;
+import com.mdzyuba.popularmovies.service.PopularMoviesProvider;
 import com.mdzyuba.popularmovies.service.TopRatedMoviesProvider;
 import com.mdzyuba.popularmovies.view.MovieAdapter;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +44,35 @@ public class MainActivity extends AppCompatActivity {
     private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
         @Override
         public void onMovieClick(Movie movie) {
-            startActivity(MovieDetailsActivity.createIntent(MainActivity.this, movie));
+            Intent intent = MovieDetailsActivity.createIntent(MainActivity.this, movie);
+            startActivity(intent);
         }
     };
 
     enum MoviesSelection {
-        MOST_POPULAR,
-        TOP_RATED
+        MOST_POPULAR(0),
+        TOP_RATED(1);
+
+        private final int value;
+
+        MoviesSelection(int value) {
+            this.value = value;
+        }
+
+        int getValue() {
+            return value;
+        }
+
+        static MoviesSelection valueOf(int i) {
+            switch (i) {
+                case 0:
+                    return MOST_POPULAR;
+                case 1:
+                    return TOP_RATED;
+                    default:
+                        return MOST_POPULAR;
+            }
+        }
     }
 
     @Override
@@ -53,9 +81,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(KEY_MOVIES_SELECTION)) {
-            moviesSelection = (MoviesSelection) savedInstanceState.getSerializable(KEY_MOVIES_SELECTION);
-        } else {
-            moviesSelection = MoviesSelection.MOST_POPULAR;
+            setMoviesSelection(
+                    (MoviesSelection) savedInstanceState.getSerializable(KEY_MOVIES_SELECTION));
         }
 
         networkDataProvider = new NetworkDataProvider();
@@ -68,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
 
         movieAdapter = new MovieAdapter(movieClickListener);
         movieListView.setAdapter(movieAdapter);
-        reloadMovies(moviesSelection);
+
+        reloadMovies(getMoviesSelection());
     }
 
     @Override
@@ -98,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         if (selection == moviesSelection && movieAdapter.getItemCount() > 0) {
             return;
         }
-        moviesSelection = selection;
+        setMoviesSelection(selection);
         switch (selection) {
             case TOP_RATED:
                 setTitle(R.string.top_movies);
@@ -121,9 +149,31 @@ public class MainActivity extends AppCompatActivity {
         return moviesProvider;
     }
 
+    private MoviesSelection getMoviesSelection() {
+        if (moviesSelection == null) {
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            int savedSelection = sharedPref
+                    .getInt(KEY_MOVIES_SELECTION, MoviesSelection.MOST_POPULAR.getValue());
+            moviesSelection = MoviesSelection.valueOf(savedSelection);
+        }
+        return moviesSelection;
+    }
+
+    private void setMoviesSelection(MoviesSelection moviesSelection) {
+        if (moviesSelection != this.moviesSelection) {
+            this.moviesSelection = moviesSelection;
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putInt(KEY_MOVIES_SELECTION, moviesSelection.getValue());
+            editor.apply();
+        }
+    }
+
     private static class InitPopularMoviesTask extends AsyncTask<Void, Void, List<Movie>> {
 
         private final WeakReference<MainActivity> activityWeakReference;
+
+        private Exception exception;
 
         InitPopularMoviesTask(final MainActivity activity) {
             activityWeakReference = new WeakReference<>(activity);
@@ -135,13 +185,35 @@ public class MainActivity extends AppCompatActivity {
             MainActivity mainActivity = activityWeakReference.get();
             if (mainActivity != null) {
                 MoviesProvider moviesProvider = mainActivity.getMoviesProvider();
-                movies = moviesProvider.getMovies();
+                try {
+                    movies = moviesProvider.getMovies();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error: " + e.getMessage(), e);
+                    exception = e;
+                }
             }
             return movies;
         }
 
         @Override
         protected void onPostExecute(List<Movie> movies) {
+
+            if (this.exception != null) {
+                MainActivity activity = activityWeakReference.get();
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(R.string.error_loading_movies);
+                builder.setMessage("Error: " + exception.getMessage());
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+                return;
+            }
+
             MainActivity mainActivity = activityWeakReference.get();
             if (mainActivity != null) {
                 mainActivity.movieAdapter.updateMovies(movies);

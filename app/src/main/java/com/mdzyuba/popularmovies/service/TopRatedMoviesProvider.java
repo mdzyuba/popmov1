@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.mdzyuba.popularmovies.model.Movie;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class TopRatedMoviesProvider extends BaseMoviesProvider {
 
     @NonNull
     @Override
-    public List<Movie> getMovies() {
+    public List<Movie> getMovies() throws IOException {
         URL topRatedMoviesURL = new MovieApiClient().buildGetTopRatedMoviesUrl();
         return getMovieList(topRatedMoviesURL);
     }

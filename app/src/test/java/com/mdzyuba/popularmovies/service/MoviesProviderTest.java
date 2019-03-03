@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class MoviesProviderTest {
     }
 
     @Test
-    public void getPopularMovies() {
+    public void getPopularMovies() throws IOException {
         List<Movie> movies = moviesProvider.getMovies();
         resourceUtils.assertMoviesParsed(movies);
     }

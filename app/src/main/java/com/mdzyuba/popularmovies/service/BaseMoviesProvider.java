@@ -1,7 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.mdzyuba.popularmovies.model.Movie;
 
@@ -20,18 +19,14 @@ abstract class BaseMoviesProvider implements MoviesProvider {
     }
 
     @NonNull
-    List<Movie> getMovieList(URL getMoviesURL) {
+    List<Movie> getMovieList(URL getMoviesURL) throws IOException {
         List<Movie> movies = new ArrayList<>();
         if (getMoviesURL == null) {
             throw new InvalidParameterException("The url should not be null");
         }
-        try {
-            String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
-            MovieParser movieParser = new MovieParser();
-            movies = movieParser.parseMovies(json);
-        } catch (IOException e) {
-            Log.e(TAG, "Error: " + e.getMessage(), e);
-        }
+        String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
+        MovieParser movieParser = new MovieParser();
+        movies = movieParser.parseMovies(json);
         return movies;
     }
 }
