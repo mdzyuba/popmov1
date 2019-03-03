@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.mdzyuba.popularmovies.model.Movie;
 import com.mdzyuba.popularmovies.view.ImageUtil;
+import com.mdzyuba.popularmovies.view.PicassoProvider;
+import com.squareup.picasso.Picasso;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -21,6 +23,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     private static final String KEY_MOVIE = "MOVIE";
     private Movie movie;
+    private Picasso picasso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
             if (intent.hasExtra(KEY_MOVIE)) {
                 movie = intent.getParcelableExtra(KEY_MOVIE);
             }
+        }
+
+        if (picasso == null) {
+            picasso = PicassoProvider.getPicasso(this.getApplicationContext());
         }
 
         if (movie != null) {
@@ -62,7 +69,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void initPosterImage() {
         ImageView imageView = findViewById(R.id.iv_poster);
         if (movie.getPosterPath() != null) {
-            ImageUtil.loadImage(movie, imageView);
+            ImageUtil.loadImage(picasso, movie, imageView);
         }
     }
 

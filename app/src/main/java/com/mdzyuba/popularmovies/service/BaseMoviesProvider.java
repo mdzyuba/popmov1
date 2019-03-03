@@ -7,7 +7,6 @@ import com.mdzyuba.popularmovies.model.Movie;
 import java.io.IOException;
 import java.net.URL;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.List;
 
 abstract class BaseMoviesProvider implements MoviesProvider {
@@ -20,13 +19,12 @@ abstract class BaseMoviesProvider implements MoviesProvider {
 
     @NonNull
     List<Movie> getMovieList(URL getMoviesURL) throws IOException {
-        List<Movie> movies = new ArrayList<>();
         if (getMoviesURL == null) {
             throw new InvalidParameterException("The url should not be null");
         }
         String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
         MovieParser movieParser = new MovieParser();
-        movies = movieParser.parseMovies(json);
+        List<Movie> movies = movieParser.parseMovies(json);
         return movies;
     }
 }

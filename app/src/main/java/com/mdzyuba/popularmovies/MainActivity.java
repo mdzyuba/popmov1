@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS);
         movieListView.setLayoutManager(gridLayoutManager);
 
-        movieAdapter = new MovieAdapter(movieClickListener);
+        movieAdapter = new MovieAdapter(this, movieClickListener);
         movieListView.setAdapter(movieAdapter);
 
         reloadMovies(getMoviesSelection());

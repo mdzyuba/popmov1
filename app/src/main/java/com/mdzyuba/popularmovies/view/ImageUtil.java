@@ -1,6 +1,5 @@
 package com.mdzyuba.popularmovies.view;
 
-import android.net.Uri;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -15,16 +14,8 @@ public class ImageUtil {
 
     private static final String TAG = ImageUtil.class.getSimpleName();
 
-    public static void loadImage(Movie movie, ImageView imageView) {
+    public static void loadImage(Picasso picasso, Movie movie, ImageView imageView) {
         MovieApiClient movieApiClient = new MovieApiClient();
-        Picasso.Builder picassoBuilder = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
-            @Override
-            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                Log.e(TAG, "Error loading an image: " + uri, exception);
-            }
-        });
-        Picasso picasso = picassoBuilder.build();
-
         String posterPath = movie.getPosterPath();
         URL imageUrl = null;
         if (posterPath != null) {
