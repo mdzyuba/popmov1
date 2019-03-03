@@ -197,28 +197,31 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<Movie> movies) {
-
-            if (this.exception != null) {
-                MainActivity activity = activityWeakReference.get();
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                builder.setTitle(R.string.error_loading_movies);
-                builder.setMessage("Error: " + exception.getMessage());
-                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                AlertDialog alertDialog = builder.create();
-                alertDialog.show();
+            MainActivity mainActivity = activityWeakReference.get();
+            if (mainActivity == null) {
                 return;
             }
-
-            MainActivity mainActivity = activityWeakReference.get();
-            if (mainActivity != null) {
+            if (this.exception == null) {
                 mainActivity.movieAdapter.updateMovies(movies);
                 mainActivity.movieListView.smoothScrollToPosition(0);
+            } else {
+                showErrorDialog(mainActivity);
             }
+        }
+
+        private void showErrorDialog(final MainActivity mainActivity) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            builder.setTitle(R.string.error_loading_movies);
+            builder.setMessage("Error: " + exception.getMessage() + "\n" +
+                               mainActivity.getString(R.string.try_later));
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         }
     }
 }

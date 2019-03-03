@@ -11,4 +11,6 @@
     <string name="rating">Rating</string>
     <string name="movie_overview">Movie Overview</string>
     <string name="error_loading_movies">Loading Movies</string>
+    <string name="try_later">Please try again later.</string>
+    <string name="movie_detail_activity">Movie Details</string>
 </resources>

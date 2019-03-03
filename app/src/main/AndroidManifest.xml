@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/DarkAppTheme">
         <activity android:name=".MovieDetailsActivity"
+            android:label="@string/movie_detail_activity"
             android:parentActivityName=".MainActivity"/>
         <activity android:name=".MainActivity">
             <intent-filter>
