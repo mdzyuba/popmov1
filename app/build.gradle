@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.squareup.okhttp3:okhttp:3.13.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
     // Picasso is using appcompat-v7:27.1.0. so we need to use the same.
     //noinspection GradleDependency

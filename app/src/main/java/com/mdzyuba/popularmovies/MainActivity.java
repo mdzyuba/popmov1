@@ -44,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private MoviesSelection moviesSelection;
     private ProgressBar progressBar;
 
+    private TopRatedMoviesProvider topRatedMoviesProvider;
+    private PopularMoviesProvider popularMoviesProvider;
+
     private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
         @Override
         public void onMovieClick(Movie movie) {
@@ -63,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         networkDataProvider = new NetworkDataProvider();
-        moviesProvider = new PopularMoviesProvider(networkDataProvider);
+        moviesProvider = getPopularMoviesProvider();
 
         movieListView = findViewById(R.id.list_view);
 
@@ -109,18 +112,43 @@ public class MainActivity extends AppCompatActivity {
         switch (selection) {
             case TOP_RATED:
                 setTitle(R.string.top_movies);
-                moviesProvider = new TopRatedMoviesProvider(networkDataProvider);
+                moviesProvider = getTopRatedMoviesProvider();
                 break;
             case MOST_POPULAR:
                 setTitle(R.string.most_popular_movies);
-                moviesProvider = new PopularMoviesProvider(networkDataProvider);
+                moviesProvider = getPopularMoviesProvider();
                 break;
             default:
                 Log.e(TAG, "The selection is unknown: " + selection);
-                moviesProvider = new TopRatedMoviesProvider(networkDataProvider);
+                moviesProvider = getTopRatedMoviesProvider();
         }
-        InitPopularMoviesTask initPopularMoviesTask = new InitPopularMoviesTask(this);
-        initPopularMoviesTask.execute();
+        if (!moviesProvider.isInitialized()) {
+            InitPopularMoviesTask initPopularMoviesTask = new InitPopularMoviesTask(this);
+            initPopularMoviesTask.execute();
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+            try {
+                movieAdapter.updateMovies(moviesProvider.getMovies());
+                movieListView.smoothScrollToPosition(0);
+            } catch (IOException e) {
+                Log.e(TAG, "Updating movies failed: " + e.getMessage(), e);
+                showErrorDialog(e);
+            }
+        }
+    }
+
+    private PopularMoviesProvider getPopularMoviesProvider() {
+        if (popularMoviesProvider == null) {
+            popularMoviesProvider = new PopularMoviesProvider(networkDataProvider);
+        }
+        return popularMoviesProvider;
+    }
+
+    private TopRatedMoviesProvider getTopRatedMoviesProvider() {
+        if (topRatedMoviesProvider == null) {
+            topRatedMoviesProvider = new TopRatedMoviesProvider(networkDataProvider);
+        }
+        return topRatedMoviesProvider;
     }
 
     @NonNull
@@ -185,24 +213,24 @@ public class MainActivity extends AppCompatActivity {
                 mainActivity.movieAdapter.updateMovies(movies);
                 mainActivity.movieListView.smoothScrollToPosition(0);
             } else {
-                showErrorDialog(mainActivity);
+                mainActivity.showErrorDialog(exception);
             }
         }
+    }
 
-        private void showErrorDialog(final MainActivity mainActivity) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-            builder.setTitle(R.string.error_loading_movies);
-            builder.setMessage("Error: " + exception.getMessage() + "\n" +
-                               mainActivity.getString(R.string.try_later));
-            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-        }
+    private void showErrorDialog(Exception exception) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.error_loading_movies);
+        builder.setMessage("Error: " + exception.getMessage() + "\n" +
+                           getString(R.string.try_later));
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     enum MoviesSelection {

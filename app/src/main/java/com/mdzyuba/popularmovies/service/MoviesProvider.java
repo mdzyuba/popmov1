@@ -10,4 +10,6 @@ import java.util.List;
 public interface MoviesProvider {
     @NonNull
     List<Movie> getMovies() throws IOException;
+
+    boolean isInitialized();
 }

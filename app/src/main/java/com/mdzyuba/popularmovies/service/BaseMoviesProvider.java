@@ -9,12 +9,19 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.List;
 
-abstract class BaseMoviesProvider implements MoviesProvider {
+public abstract class BaseMoviesProvider implements MoviesProvider {
     private static final String TAG = BaseMoviesProvider.class.getSimpleName();
     private final NetworkDataProvider networkDataProvider;
+    private boolean initialized;
+    private List<Movie> movieList;
 
     BaseMoviesProvider(@NonNull NetworkDataProvider networkDataProvider) {
         this.networkDataProvider = networkDataProvider;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @NonNull
@@ -22,9 +29,14 @@ abstract class BaseMoviesProvider implements MoviesProvider {
         if (getMoviesURL == null) {
             throw new InvalidParameterException("The url should not be null");
         }
-        String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
-        MovieParser movieParser = new MovieParser();
-        List<Movie> movies = movieParser.parseMovies(json);
-        return movies;
+        if (movieList == null || movieList.size() == 0) {
+            String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
+            MovieParser movieParser = new MovieParser();
+            movieList = movieParser.parseMovies(json);
+            if (movieList.size() > 0) {
+                initialized = true;
+            }
+        }
+        return movieList;
     }
 }

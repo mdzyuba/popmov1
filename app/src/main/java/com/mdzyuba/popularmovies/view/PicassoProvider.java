@@ -6,7 +6,11 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.mdzyuba.popularmovies.service.HttpClientProvider;
+import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Provides a singleton instance of the picasso library.
@@ -44,6 +48,8 @@ public class PicassoProvider {
                         Log.e(TAG, "Error loading an image: " + uri, exception);
                     }
                 });
+                OkHttpClient client = HttpClientProvider.getClient();
+                picassoBuilder.downloader(new OkHttp3Downloader(client));
                 instance = picassoBuilder.build();
             }
         }
