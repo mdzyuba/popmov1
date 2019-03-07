@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.mdzyuba.popularmovies.model.Movie;
 import com.mdzyuba.popularmovies.service.MoviesProvider;
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView movieListView;
     private MovieAdapter movieAdapter;
     private MoviesSelection moviesSelection;
+    private ProgressBar progressBar;
 
     private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
         @Override
@@ -48,32 +51,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
     };
-
-    enum MoviesSelection {
-        MOST_POPULAR(0),
-        TOP_RATED(1);
-
-        private final int value;
-
-        MoviesSelection(int value) {
-            this.value = value;
-        }
-
-        int getValue() {
-            return value;
-        }
-
-        static MoviesSelection valueOf(int i) {
-            switch (i) {
-                case 0:
-                    return MOST_POPULAR;
-                case 1:
-                    return TOP_RATED;
-                    default:
-                        return MOST_POPULAR;
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         movieAdapter = new MovieAdapter(this, movieClickListener);
         movieListView.setAdapter(movieAdapter);
+        progressBar = findViewById(R.id.progress_circular);
 
         reloadMovies(getMoviesSelection());
     }
@@ -126,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         if (selection == moviesSelection && movieAdapter.getItemCount() > 0) {
             return;
         }
+        progressBar.setVisibility(View.VISIBLE);
         setMoviesSelection(selection);
         switch (selection) {
             case TOP_RATED:
@@ -201,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             if (mainActivity == null) {
                 return;
             }
+            mainActivity.progressBar.setVisibility(View.INVISIBLE);
             if (this.exception == null) {
                 mainActivity.movieAdapter.updateMovies(movies);
                 mainActivity.movieListView.smoothScrollToPosition(0);
@@ -222,6 +202,32 @@ public class MainActivity extends AppCompatActivity {
             });
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
+        }
+    }
+
+    enum MoviesSelection {
+        MOST_POPULAR(0),
+        TOP_RATED(1);
+
+        private final int value;
+
+        MoviesSelection(int value) {
+            this.value = value;
+        }
+
+        int getValue() {
+            return value;
+        }
+
+        static MoviesSelection valueOf(int i) {
+            switch (i) {
+                case 0:
+                    return MOST_POPULAR;
+                case 1:
+                    return TOP_RATED;
+                default:
+                    return MOST_POPULAR;
+            }
         }
     }
 }
