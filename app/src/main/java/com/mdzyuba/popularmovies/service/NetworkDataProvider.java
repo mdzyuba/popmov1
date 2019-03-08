@@ -1,6 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +25,9 @@ public class NetworkDataProvider {
         OkHttpClient client = HttpClientProvider.getClient();
         try (Response response = client.newCall(request).execute()) {
             ResponseBody body = response.body();
+            if (body == null) {
+                return null;
+            }
             try (InputStream in = body.byteStream())  {
                 Scanner scanner = new Scanner(in);
                 scanner.useDelimiter(DELIMITER);

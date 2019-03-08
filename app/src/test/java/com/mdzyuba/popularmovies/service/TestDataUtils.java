@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -31,8 +33,12 @@ class TestDataUtils {
             "/hXgmWPd1SuujRZ4QnKLzrj79PAw.jpg", "/wrFpXMNBRj2PBiN4Z5kix51XaIZ.jpg",
             "/b5RMzLAyq5QW6GtN9sIeAEMLlBI.jpg"};
 
+    @Nullable
     public String readPopularMoviesJsonResponse() throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
+        if (classLoader == null) {
+            return null;
+        }
         try (InputStream inputStream =
                      classLoader.getResourceAsStream(POPULAR_MOVIES_RESPONSE_JSON)) {
             if (inputStream == null) {

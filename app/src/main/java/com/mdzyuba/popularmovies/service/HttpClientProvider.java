@@ -1,6 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import okhttp3.OkHttpClient;
 

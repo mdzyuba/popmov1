@@ -3,7 +3,7 @@ package com.mdzyuba.popularmovies.view;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.mdzyuba.popularmovies.service.HttpClientProvider;

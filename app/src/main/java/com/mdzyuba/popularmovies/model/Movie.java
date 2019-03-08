@@ -2,7 +2,7 @@ package com.mdzyuba.popularmovies.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.Date;
