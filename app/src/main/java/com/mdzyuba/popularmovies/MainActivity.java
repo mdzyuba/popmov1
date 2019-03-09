@@ -5,12 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,16 +13,24 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.mdzyuba.popularmovies.model.Movie;
+import com.mdzyuba.popularmovies.service.MovieLoadListener;
 import com.mdzyuba.popularmovies.service.MoviesProvider;
 import com.mdzyuba.popularmovies.service.NetworkDataProvider;
 import com.mdzyuba.popularmovies.service.PopularMoviesProvider;
 import com.mdzyuba.popularmovies.service.TopRatedMoviesProvider;
+import com.mdzyuba.popularmovies.view.InitPopularMoviesTask;
 import com.mdzyuba.popularmovies.view.MovieAdapter;
+import com.mdzyuba.popularmovies.view.MoviesSelection;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
 
 /**
  * Displays a list of movie posters.
@@ -55,27 +58,61 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            Log.d(TAG, "scroll: " + newState + ", " + recyclerView.canScrollVertically(1));
+            if (newState == SCROLL_STATE_IDLE && !recyclerView.canScrollVertically(1)) {
+                if (moviesProvider.canLoadMoreMovies()) {
+                    Log.d(TAG, "Load more movies");
+                }
+            }
+        }
+    };
+
+    private final MovieLoadListener movieLoadListener = new MovieLoadListener() {
+        @Override
+        public void onLoadStarted() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onLoaded(List<Movie> movies) {
+            progressBar.setVisibility(View.INVISIBLE);
+            movieAdapter.updateMovies(movies);
+            movieListView.smoothScrollToPosition(0);
+        }
+
+        @Override
+        public void onError(Exception e) {
+            progressBar.setVisibility(View.INVISIBLE);
+            showErrorDialog(e);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(KEY_MOVIES_SELECTION)) {
-            setMoviesSelection(
-                    (MoviesSelection) savedInstanceState.getSerializable(KEY_MOVIES_SELECTION));
+            MoviesSelection moviesSelection =
+                    (MoviesSelection) savedInstanceState.getSerializable(KEY_MOVIES_SELECTION);
+            setMoviesSelection(moviesSelection);
         }
+
+        progressBar = findViewById(R.id.progress_circular);
 
         networkDataProvider = new NetworkDataProvider();
         moviesProvider = getPopularMoviesProvider();
 
-        movieListView = findViewById(R.id.list_view);
-
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS);
+        movieListView = findViewById(R.id.list_view);
         movieListView.setLayoutManager(gridLayoutManager);
-
         movieAdapter = new MovieAdapter(this, movieClickListener);
         movieListView.setAdapter(movieAdapter);
-        progressBar = findViewById(R.id.progress_circular);
+        movieListView.addOnScrollListener(scrollListener);
 
         reloadMovies(getMoviesSelection());
     }
@@ -107,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
         if (selection == moviesSelection && movieAdapter.getItemCount() > 0) {
             return;
         }
-        progressBar.setVisibility(View.VISIBLE);
         setMoviesSelection(selection);
         switch (selection) {
             case TOP_RATED:
@@ -123,10 +159,10 @@ public class MainActivity extends AppCompatActivity {
                 moviesProvider = getTopRatedMoviesProvider();
         }
         if (!moviesProvider.isInitialized()) {
-            InitPopularMoviesTask initPopularMoviesTask = new InitPopularMoviesTask(this);
+            InitPopularMoviesTask initPopularMoviesTask =
+                    new InitPopularMoviesTask(moviesProvider, movieLoadListener);
             initPopularMoviesTask.execute();
         } else {
-            progressBar.setVisibility(View.INVISIBLE);
             try {
                 movieAdapter.updateMovies(moviesProvider.getMovies());
                 movieListView.smoothScrollToPosition(0);
@@ -176,48 +212,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static class InitPopularMoviesTask extends AsyncTask<Void, Void, List<Movie>> {
-
-        private final WeakReference<MainActivity> activityWeakReference;
-
-        private Exception exception;
-
-        InitPopularMoviesTask(final MainActivity activity) {
-            activityWeakReference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected List<Movie> doInBackground(Void... voids) {
-            List<Movie> movies = new ArrayList<>();
-            MainActivity mainActivity = activityWeakReference.get();
-            if (mainActivity != null) {
-                MoviesProvider moviesProvider = mainActivity.getMoviesProvider();
-                try {
-                    movies = moviesProvider.getMovies();
-                } catch (IOException e) {
-                    Log.e(TAG, "Error: " + e.getMessage(), e);
-                    exception = e;
-                }
-            }
-            return movies;
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movies) {
-            MainActivity mainActivity = activityWeakReference.get();
-            if (mainActivity == null) {
-                return;
-            }
-            mainActivity.progressBar.setVisibility(View.INVISIBLE);
-            if (this.exception == null) {
-                mainActivity.movieAdapter.updateMovies(movies);
-                mainActivity.movieListView.smoothScrollToPosition(0);
-            } else {
-                mainActivity.showErrorDialog(exception);
-            }
-        }
-    }
-
     private void showErrorDialog(Exception exception) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.error_loading_movies);
@@ -233,29 +227,4 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    enum MoviesSelection {
-        MOST_POPULAR(0),
-        TOP_RATED(1);
-
-        private final int value;
-
-        MoviesSelection(int value) {
-            this.value = value;
-        }
-
-        int getValue() {
-            return value;
-        }
-
-        static MoviesSelection valueOf(int i) {
-            switch (i) {
-                case 0:
-                    return MOST_POPULAR;
-                case 1:
-                    return TOP_RATED;
-                default:
-                    return MOST_POPULAR;
-            }
-        }
-    }
 }

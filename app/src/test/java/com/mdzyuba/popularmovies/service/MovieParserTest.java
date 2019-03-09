@@ -1,6 +1,7 @@
 package com.mdzyuba.popularmovies.service;
 
 import com.mdzyuba.popularmovies.model.Movie;
+import com.mdzyuba.popularmovies.model.MovieCollection;
 import com.mdzyuba.popularmovies.model.SampleMovie;
 
 import org.junit.Before;
@@ -9,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,16 +25,16 @@ public class MovieParserTest {
     }
 
     @Test
-    public void parsePopularMovies_returnsValidPosterPathUrls() throws IOException {
+    public void parseMovieCollection_returnsValidData() throws IOException {
         TestDataUtils resourceUtils = new TestDataUtils();
         String json = resourceUtils.readPopularMoviesJsonResponse();
         assertNotNull("The json is null", json);
 
-        List<Movie> movies = movieParser.parseMovies(json);
+        MovieCollection movieCollection = movieParser.parseMovieCollection(json);
 
-        resourceUtils.assertMoviesParsed(movies);
+        resourceUtils.assertMoviesParsed(movieCollection.getMovieList());
 
-        Movie movie = movies.get(0);
+        Movie movie = movieCollection.getMovieList().get(0);
         assertEquals(SampleMovie.TITLE, movie.getTitle());
         assertEquals(SampleMovie.POSTER_PATH, movie.getPosterPath());
         assertEquals(SampleMovie.OVERVIEW, movie.getOverview());

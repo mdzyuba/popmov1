@@ -1,12 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
-import androidx.annotation.NonNull;
-
-import com.mdzyuba.popularmovies.model.Movie;
-
-import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 public class PopularMoviesProvider extends BaseMoviesProvider {
 
@@ -16,10 +10,9 @@ public class PopularMoviesProvider extends BaseMoviesProvider {
         super(networkDataProvider);
     }
 
-    @NonNull
     @Override
-    public List<Movie> getMovies() throws IOException {
+    public URL getRequestUri(int page) {
         URL popularMoviesUrl = new MovieApiClient().buildGetPopularMoviesUrl();
-        return getMovieList(popularMoviesUrl);
+        return popularMoviesUrl;
     }
 }
