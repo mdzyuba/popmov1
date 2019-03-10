@@ -39,27 +39,28 @@ public class MainActivity extends AppCompatActivity {
 
     private MoviesGridViewModel viewModel;
 
-    private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
-        @Override
-        public void onMovieClick(Movie movie) {
-            Intent intent = MovieDetailsActivity.createIntent(MainActivity.this, movie);
-            startActivity(intent);
-        }
-    };
-
-    private final RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-            Log.d(TAG, "scroll: " + newState + ", " + recyclerView.canScrollVertically(1));
-            if (newState == SCROLL_STATE_IDLE && !recyclerView.canScrollVertically(1)) {
-                if (viewModel.canLoadMoreMovies()) {
-                    Log.d(TAG, "Load more movies");
-                    viewModel.loadMovies();
+    private final MovieAdapter.MovieClickListener movieClickListener =
+            new MovieAdapter.MovieClickListener() {
+                @Override
+                public void onMovieClick(Movie movie) {
+                    Intent intent = MovieDetailsActivity.createIntent(MainActivity.this, movie);
+                    startActivity(intent);
                 }
-            }
-        }
-    };
+            };
+
+    private final RecyclerView.OnScrollListener scrollListener =
+            new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (newState == SCROLL_STATE_IDLE && !recyclerView.canScrollVertically(1)) {
+                        if (viewModel.canLoadMoreMovies()) {
+                            Log.d(TAG, "Load more movies");
+                            viewModel.loadMovies();
+                        }
+                    }
+                }
+            };
 
     private final Observer<List<Movie>> movieListObserver = new Observer<List<Movie>>() {
         @Override
@@ -80,26 +81,30 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final Observer<MoviesSelection> moviesSelectionObserver = new Observer<MoviesSelection>() {
-        @Override
-        public void onChanged(MoviesSelection moviesSelection) {
-            switch (moviesSelection) {
-                case TOP_RATED:
-                    setTitle(R.string.top_movies);
-                    break;
-                case MOST_POPULAR:
-                    setTitle(R.string.most_popular_movies);
-                    break;
-                default:
-                    Log.e(TAG, "The selection is unknown: " + moviesSelection);
-            }
-        }
-    };
+    private final Observer<MoviesSelection> moviesSelectionObserver =
+            new Observer<MoviesSelection>() {
+                @Override
+                public void onChanged(MoviesSelection moviesSelection) {
+                    switch (moviesSelection) {
+                        case TOP_RATED:
+                            setTitle(R.string.top_movies);
+                            break;
+                        case MOST_POPULAR:
+                            setTitle(R.string.most_popular_movies);
+                            break;
+                        default:
+                            Log.e(TAG, "The selection is unknown: " + moviesSelection);
+                    }
+                }
+            };
 
     private final Observer<Exception> dataLoadingExceptionObserver = new Observer<Exception>() {
         @Override
         public void onChanged(Exception e) {
-            showErrorDialog(e);
+            if (e != null) {
+                showErrorDialog(e);
+                viewModel.resetException();
+            }
         }
     };
 
@@ -142,14 +147,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showErrorDialog(Exception exception) {
+        Log.e(TAG, "Exception: " + exception.getMessage(), exception);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.error_loading_movies);
-        builder.setMessage("Error: " + exception.getMessage() + "\n" +
-                           getString(R.string.try_later));
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.error_loading_movies_title);
+        builder.setMessage(getString(R.string.error_loading_movies_message));
+        builder.setPositiveButton(R.string.try_again, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                viewModel.loadMovies();
             }
         });
         AlertDialog alertDialog = builder.create();

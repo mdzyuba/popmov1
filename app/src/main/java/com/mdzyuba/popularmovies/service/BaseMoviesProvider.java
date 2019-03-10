@@ -15,17 +15,11 @@ import androidx.annotation.NonNull;
 public abstract class BaseMoviesProvider implements MoviesProvider {
     private static final String TAG = BaseMoviesProvider.class.getSimpleName();
     private final NetworkDataProvider networkDataProvider;
-    private boolean initialized;
     private final MovieCollection movieCollection;
 
     BaseMoviesProvider(@NonNull NetworkDataProvider networkDataProvider) {
         this.networkDataProvider = networkDataProvider;
         movieCollection = new MovieCollection();
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return initialized;
     }
 
     @NonNull
@@ -57,14 +51,10 @@ public abstract class BaseMoviesProvider implements MoviesProvider {
         movieCollection.getMovieList().addAll(movies);
         movieCollection.setFurthestPage(page);
         movieCollection.setTotalPages(partialCollection.getTotalPages());
-        if (movieCollection.getMovieList().size() > 0) {
-            initialized = true;
-        }
     }
 
     @Override
     public boolean canLoadMoreMovies() {
-        return movieCollection == null ||
-               movieCollection.getFurthestPage() < movieCollection.getTotalPages();
+        return movieCollection.getFurthestPage() < movieCollection.getTotalPages();
     }
 }

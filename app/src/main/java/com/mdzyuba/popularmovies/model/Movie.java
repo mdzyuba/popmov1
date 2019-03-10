@@ -2,11 +2,12 @@ package com.mdzyuba.popularmovies.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+
+import androidx.annotation.Nullable;
 
 public class Movie implements Parcelable {
 

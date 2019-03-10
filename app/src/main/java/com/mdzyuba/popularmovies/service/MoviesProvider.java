@@ -15,8 +15,6 @@ public interface MoviesProvider {
     @NonNull
     List<Movie> getMovies();
 
-    boolean isInitialized();
-
     boolean canLoadMoreMovies();
 
     void loadMovies() throws IOException;

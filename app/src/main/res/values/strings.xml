@@ -10,7 +10,8 @@
     <string name="release_year">Release Year</string>
     <string name="rating">Rating</string>
     <string name="movie_overview">Movie Overview</string>
-    <string name="error_loading_movies">Loading Movies</string>
-    <string name="try_later">Please try again later.</string>
+    <string name="error_loading_movies_title">Loading Movies Error</string>
+    <string name="error_loading_movies_message">Failed to retrieve movies from TheMovieDB.org.\nPlease check the network connection and try again later.</string>
+    <string name="try_again">Try again</string>
     <string name="movie_detail_activity">Movie Details</string>
 </resources>

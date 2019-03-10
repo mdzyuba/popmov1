@@ -106,4 +106,10 @@ public class MoviesGridViewModel extends ViewModel {
                 });
         initPopularMoviesTask.execute();
     }
+
+    public void resetException() {
+        if (dataLoadException.getValue() != null) {
+            dataLoadException.setValue(null);
+        }
+    }
 }

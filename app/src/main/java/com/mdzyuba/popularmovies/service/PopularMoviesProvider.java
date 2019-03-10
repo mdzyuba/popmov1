@@ -4,8 +4,6 @@ import java.net.URL;
 
 public class PopularMoviesProvider extends BaseMoviesProvider {
 
-    private static final String TAG = PopularMoviesProvider.class.getSimpleName();
-
     public PopularMoviesProvider(NetworkDataProvider networkDataProvider) {
         super(networkDataProvider);
     }
