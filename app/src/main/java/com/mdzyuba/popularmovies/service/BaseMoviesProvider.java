@@ -1,6 +1,6 @@
 package com.mdzyuba.popularmovies.service;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
 
 import com.mdzyuba.popularmovies.model.Movie;
 import com.mdzyuba.popularmovies.model.MovieCollection;
@@ -10,15 +10,17 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 public abstract class BaseMoviesProvider implements MoviesProvider {
     private static final String TAG = BaseMoviesProvider.class.getSimpleName();
     private final NetworkDataProvider networkDataProvider;
     private boolean initialized;
-    private List<Movie> movieList;
-    private MovieCollection movieCollection;
+    private final MovieCollection movieCollection;
 
     BaseMoviesProvider(@NonNull NetworkDataProvider networkDataProvider) {
         this.networkDataProvider = networkDataProvider;
+        movieCollection = new MovieCollection();
     }
 
     @Override
@@ -28,26 +30,36 @@ public abstract class BaseMoviesProvider implements MoviesProvider {
 
     @NonNull
     @Override
-    public List<Movie> getMovies() throws IOException {
-        URL popularMoviesUrl = getRequestUri(1);
-        return getMovieList(popularMoviesUrl);
+    public List<Movie> getMovies() {
+        return movieCollection.getMovieList();
     }
 
-    @NonNull
-    List<Movie> getMovieList(URL getMoviesURL) throws IOException {
+    /**
+     * Updates a movie collection with a next page of movies provided
+     * by the service.
+     * @throws IOException if an error occurs.
+     */
+    @Override
+    public void loadMovies() throws IOException {
+        int page = movieCollection.getFurthestPage() + 1;
+        if (movieCollection.getTotalPages() > 0 && page >= movieCollection.getTotalPages()) {
+            Log.d(TAG, "Reached max number of pages.");
+            return;
+        }
+        URL getMoviesURL = getRequestUri(page);
         if (getMoviesURL == null) {
             throw new InvalidParameterException("The url should not be null");
         }
-        if (movieList == null || movieList.size() == 0) {
-            String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
-            MovieParser movieParser = new MovieParser();
-            movieCollection = movieParser.parseMovieCollection(json);
-            movieList = movieCollection.getMovieList();
-            if (movieList.size() > 0) {
-                initialized = true;
-            }
+        String json = networkDataProvider.getResponseFromHttpUrl(getMoviesURL);
+        MovieParser movieParser = new MovieParser();
+        MovieCollection partialCollection = movieParser.parseMovieCollection(json);
+        List<Movie> movies = partialCollection.getMovieList();
+        movieCollection.getMovieList().addAll(movies);
+        movieCollection.setFurthestPage(page);
+        movieCollection.setTotalPages(partialCollection.getTotalPages());
+        if (movieCollection.getMovieList().size() > 0) {
+            initialized = true;
         }
-        return movieList;
     }
 
     @Override

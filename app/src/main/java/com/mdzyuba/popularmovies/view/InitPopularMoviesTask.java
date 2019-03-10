@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InitPopularMoviesTask extends AsyncTask<Void, Void, List<Movie>> {
+class InitPopularMoviesTask extends AsyncTask<Void, Void, List<Movie>> {
     private static final String TAG = InitPopularMoviesTask.class.getSimpleName();
     private final MovieLoadListener movieLoadListener;
     private final MoviesProvider moviesProvider;
@@ -31,6 +31,7 @@ public class InitPopularMoviesTask extends AsyncTask<Void, Void, List<Movie>> {
     protected List<Movie> doInBackground(Void... voids) {
         List<Movie> movies = new ArrayList<>();
         try {
+            moviesProvider.loadMovies();
             movies = moviesProvider.getMovies();
         } catch (IOException e) {
             Log.e(TAG, "Error: " + e.getMessage(), e);

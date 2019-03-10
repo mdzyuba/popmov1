@@ -12,7 +12,7 @@ public class TopRatedMoviesProvider extends BaseMoviesProvider {
 
     @Override
     public URL getRequestUri(int page) {
-        URL topRatedMoviesURL = new MovieApiClient().buildGetTopRatedMoviesUrl();
+        URL topRatedMoviesURL = new MovieApiClient().buildGetTopRatedMoviesUrl(page);
         return topRatedMoviesURL;
     }
 }

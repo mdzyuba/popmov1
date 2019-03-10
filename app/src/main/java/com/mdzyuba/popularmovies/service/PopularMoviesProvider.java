@@ -12,7 +12,7 @@ public class PopularMoviesProvider extends BaseMoviesProvider {
 
     @Override
     public URL getRequestUri(int page) {
-        URL popularMoviesUrl = new MovieApiClient().buildGetPopularMoviesUrl();
+        URL popularMoviesUrl = new MovieApiClient().buildGetPopularMoviesUrl(page);
         return popularMoviesUrl;
     }
 }

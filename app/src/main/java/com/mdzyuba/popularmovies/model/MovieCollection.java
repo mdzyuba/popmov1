@@ -1,5 +1,6 @@
 package com.mdzyuba.popularmovies.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovieCollection {
@@ -9,6 +10,12 @@ public class MovieCollection {
     private int totalPages;
 
     private int furthestPage;
+
+    public MovieCollection() {
+        furthestPage = 0;
+        totalPages = 0;
+        movieList = new ArrayList<>();
+    }
 
     public List<Movie> getMovieList() {
         return movieList;

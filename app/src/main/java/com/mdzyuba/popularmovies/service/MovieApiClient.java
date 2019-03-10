@@ -30,21 +30,21 @@ public class MovieApiClient {
     private static final String IMAGE_PATH_SEPARATOR = "/";
 
     @NonNull
-    public URL buildGetPopularMoviesUrl() {
-        return buildGerMovieUrl(POPULAR);
+    public URL buildGetPopularMoviesUrl(int page) {
+        return buildGerMovieUrl(POPULAR, page);
     }
 
     @NonNull
-    public URL buildGetTopRatedMoviesUrl() {
-        return buildGerMovieUrl(TOP_RATED);
+    public URL buildGetTopRatedMoviesUrl(int page) {
+        return buildGerMovieUrl(TOP_RATED, page);
     }
 
     @NonNull
-    private URL buildGerMovieUrl(String category) {
+    private URL buildGerMovieUrl(String category, int page) {
         Uri uri = Uri.parse(THEMOVIEDB_ORG).buildUpon().appendPath(API_VERSION).appendPath(MOVIE)
                      .appendPath(category).appendQueryParameter(API_KEY, BuildConfig.MOVIEDB_KEY)
                      .appendQueryParameter(LANGUAGE, EN_US)
-                     .appendQueryParameter(PAGE, String.valueOf(1)).build();
+                     .appendQueryParameter(PAGE, String.valueOf(page)).build();
         try {
             return new URL(uri.toString());
         } catch (MalformedURLException e) {

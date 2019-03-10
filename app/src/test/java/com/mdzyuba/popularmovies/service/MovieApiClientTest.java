@@ -23,7 +23,7 @@ public class MovieApiClientTest {
 
     @Test
     public void buildGetPopularMoviesUrl() {
-        URL popMoviesUrl = movieApiClient.buildGetPopularMoviesUrl();
+        URL popMoviesUrl = movieApiClient.buildGetPopularMoviesUrl(1);
         String expectedUriString =
                 "https://api.themoviedb.org/3/movie/popular?api_key=" + BuildConfig.MOVIEDB_KEY +
                 "&language=en-US&page=1";

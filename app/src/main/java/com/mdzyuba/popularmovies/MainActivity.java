@@ -1,10 +1,8 @@
 package com.mdzyuba.popularmovies;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -13,20 +11,16 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.mdzyuba.popularmovies.model.Movie;
-import com.mdzyuba.popularmovies.service.MovieLoadListener;
-import com.mdzyuba.popularmovies.service.MoviesProvider;
-import com.mdzyuba.popularmovies.service.NetworkDataProvider;
-import com.mdzyuba.popularmovies.service.PopularMoviesProvider;
-import com.mdzyuba.popularmovies.service.TopRatedMoviesProvider;
-import com.mdzyuba.popularmovies.view.InitPopularMoviesTask;
 import com.mdzyuba.popularmovies.view.MovieAdapter;
+import com.mdzyuba.popularmovies.view.MoviesGridViewModel;
 import com.mdzyuba.popularmovies.view.MoviesSelection;
 
-import java.io.IOException;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,16 +33,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int NUMBER_OF_COLUMNS = 2;
-    private static final String KEY_MOVIES_SELECTION = "MOVIES_SELECTION";
-    private NetworkDataProvider networkDataProvider;
-    private MoviesProvider moviesProvider;
     private RecyclerView movieListView;
     private MovieAdapter movieAdapter;
-    private MoviesSelection moviesSelection;
     private ProgressBar progressBar;
 
-    private TopRatedMoviesProvider topRatedMoviesProvider;
-    private PopularMoviesProvider popularMoviesProvider;
+    private MoviesGridViewModel viewModel;
 
     private final MovieAdapter.MovieClickListener movieClickListener = new MovieAdapter.MovieClickListener() {
         @Override
@@ -64,29 +53,52 @@ public class MainActivity extends AppCompatActivity {
             super.onScrollStateChanged(recyclerView, newState);
             Log.d(TAG, "scroll: " + newState + ", " + recyclerView.canScrollVertically(1));
             if (newState == SCROLL_STATE_IDLE && !recyclerView.canScrollVertically(1)) {
-                if (moviesProvider.canLoadMoreMovies()) {
+                if (viewModel.canLoadMoreMovies()) {
                     Log.d(TAG, "Load more movies");
+                    viewModel.loadMovies();
                 }
             }
         }
     };
 
-    private final MovieLoadListener movieLoadListener = new MovieLoadListener() {
+    private final Observer<List<Movie>> movieListObserver = new Observer<List<Movie>>() {
         @Override
-        public void onLoadStarted() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onLoaded(List<Movie> movies) {
-            progressBar.setVisibility(View.INVISIBLE);
+        public void onChanged(List<Movie> movies) {
+            Log.d(TAG, "Movie List changed. Updating the grid.");
             movieAdapter.updateMovies(movies);
-            movieListView.smoothScrollToPosition(0);
         }
+    };
 
+    private final Observer<Boolean> moviesLoadingObserver = new Observer<Boolean>() {
         @Override
-        public void onError(Exception e) {
-            progressBar.setVisibility(View.INVISIBLE);
+        public void onChanged(Boolean moviesAreLoading) {
+            if (moviesAreLoading) {
+                progressBar.setVisibility(View.VISIBLE);
+            } else {
+                progressBar.setVisibility(View.INVISIBLE);
+            }
+        }
+    };
+
+    private final Observer<MoviesSelection> moviesSelectionObserver = new Observer<MoviesSelection>() {
+        @Override
+        public void onChanged(MoviesSelection moviesSelection) {
+            switch (moviesSelection) {
+                case TOP_RATED:
+                    setTitle(R.string.top_movies);
+                    break;
+                case MOST_POPULAR:
+                    setTitle(R.string.most_popular_movies);
+                    break;
+                default:
+                    Log.e(TAG, "The selection is unknown: " + moviesSelection);
+            }
+        }
+    };
+
+    private final Observer<Exception> dataLoadingExceptionObserver = new Observer<Exception>() {
+        @Override
+        public void onChanged(Exception e) {
             showErrorDialog(e);
         }
     };
@@ -96,16 +108,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(KEY_MOVIES_SELECTION)) {
-            MoviesSelection moviesSelection =
-                    (MoviesSelection) savedInstanceState.getSerializable(KEY_MOVIES_SELECTION);
-            setMoviesSelection(moviesSelection);
-        }
-
+        viewModel = ViewModelProviders.of(this).get(MoviesGridViewModel.class);
         progressBar = findViewById(R.id.progress_circular);
-
-        networkDataProvider = new NetworkDataProvider();
-        moviesProvider = getPopularMoviesProvider();
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS);
         movieListView = findViewById(R.id.list_view);
@@ -114,7 +118,11 @@ public class MainActivity extends AppCompatActivity {
         movieListView.setAdapter(movieAdapter);
         movieListView.addOnScrollListener(scrollListener);
 
-        reloadMovies(getMoviesSelection());
+        viewModel.getMovieList().observe(this, movieListObserver);
+        viewModel.areMoviesLoading().observe(this, moviesLoadingObserver);
+        viewModel.getMoviesSelection().observe(this, moviesSelectionObserver);
+        viewModel.getDataLoadException().observe(this, dataLoadingExceptionObserver);
+        viewModel.loadMovies();
     }
 
     @Override
@@ -124,92 +132,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable(KEY_MOVIES_SELECTION, moviesSelection);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.most_popular_movies) {
-            reloadMovies(MoviesSelection.MOST_POPULAR);
+            viewModel.setMoviesSelection(MoviesSelection.MOST_POPULAR);
         } else if (item.getItemId() == R.id.top_movies) {
-            // select top movies
-            reloadMovies(MoviesSelection.TOP_RATED);
+            viewModel.setMoviesSelection(MoviesSelection.TOP_RATED);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void reloadMovies(@NonNull MoviesSelection selection) {
-        if (selection == moviesSelection && movieAdapter.getItemCount() > 0) {
-            return;
-        }
-        setMoviesSelection(selection);
-        switch (selection) {
-            case TOP_RATED:
-                setTitle(R.string.top_movies);
-                moviesProvider = getTopRatedMoviesProvider();
-                break;
-            case MOST_POPULAR:
-                setTitle(R.string.most_popular_movies);
-                moviesProvider = getPopularMoviesProvider();
-                break;
-            default:
-                Log.e(TAG, "The selection is unknown: " + selection);
-                moviesProvider = getTopRatedMoviesProvider();
-        }
-        if (!moviesProvider.isInitialized()) {
-            InitPopularMoviesTask initPopularMoviesTask =
-                    new InitPopularMoviesTask(moviesProvider, movieLoadListener);
-            initPopularMoviesTask.execute();
-        } else {
-            try {
-                movieAdapter.updateMovies(moviesProvider.getMovies());
-                movieListView.smoothScrollToPosition(0);
-            } catch (IOException e) {
-                Log.e(TAG, "Updating movies failed: " + e.getMessage(), e);
-                showErrorDialog(e);
-            }
-        }
-    }
-
-    private PopularMoviesProvider getPopularMoviesProvider() {
-        if (popularMoviesProvider == null) {
-            popularMoviesProvider = new PopularMoviesProvider(networkDataProvider);
-        }
-        return popularMoviesProvider;
-    }
-
-    private TopRatedMoviesProvider getTopRatedMoviesProvider() {
-        if (topRatedMoviesProvider == null) {
-            topRatedMoviesProvider = new TopRatedMoviesProvider(networkDataProvider);
-        }
-        return topRatedMoviesProvider;
-    }
-
-    @NonNull
-    private MoviesProvider getMoviesProvider() {
-        return moviesProvider;
-    }
-
-    private MoviesSelection getMoviesSelection() {
-        if (moviesSelection == null) {
-            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            int savedSelection = sharedPref
-                    .getInt(KEY_MOVIES_SELECTION, MoviesSelection.MOST_POPULAR.getValue());
-            moviesSelection = MoviesSelection.valueOf(savedSelection);
-        }
-        return moviesSelection;
-    }
-
-    private void setMoviesSelection(MoviesSelection moviesSelection) {
-        if (moviesSelection != this.moviesSelection) {
-            this.moviesSelection = moviesSelection;
-            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putInt(KEY_MOVIES_SELECTION, moviesSelection.getValue());
-            editor.apply();
-        }
     }
 
     private void showErrorDialog(Exception exception) {

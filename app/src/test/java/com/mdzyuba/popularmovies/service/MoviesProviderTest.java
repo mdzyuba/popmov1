@@ -36,6 +36,7 @@ public class MoviesProviderTest {
 
     @Test
     public void getPopularMovies() throws IOException {
+        moviesProvider.loadMovies();
         List<Movie> movies = moviesProvider.getMovies();
         resourceUtils.assertMoviesParsed(movies);
     }
