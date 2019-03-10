@@ -67,33 +67,6 @@ class MovieParser {
         return movieCollection;
     }
 
-//    @NonNull
-//    public List<Movie> parseMovies(@Nullable String json) {
-//        List<Movie> movies = new ArrayList<>();
-//        if (json == null) {
-//            return movies;
-//        }
-//        try {
-//            JSONObject jsonObject = new JSONObject(json);
-//            if (BuildConfig.DEBUG) {
-//                Iterator<String> keyIterator = jsonObject.keys();
-//                while (keyIterator.hasNext()) {
-//                    Log.d(TAG, "key: " + keyIterator.next());
-//                }
-//            }
-//            JSONArray results = jsonObject.optJSONArray(RESULTS);
-//            for (int i = 0; i < results.length(); i++) {
-//                Movie movie = parseMovie(results.optJSONObject(i));
-//                if (movie != null) {
-//                    movies.add(movie);
-//                }
-//            }
-//        } catch (JSONException e) {
-//            Log.d(TAG, "JSON parsing error: " + e.getMessage(), e);
-//        }
-//        return movies;
-//    }
-
     @Nullable
     private Movie parseMovie(@Nullable JSONObject jsonMovie) {
         if (jsonMovie == null) {

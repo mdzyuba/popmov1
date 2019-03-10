@@ -26,7 +26,9 @@ public class MovieApiClient {
     private static final String PAGE = "page";
 
     private static final String IMAGE_BASE = "http://image.tmdb.org/t/p";
-    private static final String SIZE = "w185";
+    // Possible options are: "w92", "w154", "w185", "w342", "w500", "w780", or "original"
+    // For most phones we recommend using “w185”.
+    private static final String IMAGE_SIZE = "w185";
     private static final String IMAGE_PATH_SEPARATOR = "/";
 
     @NonNull
@@ -55,7 +57,7 @@ public class MovieApiClient {
 
     @Nullable
     public URL getImageUri(@NonNull String imagePath) {
-        Uri.Builder builder = Uri.parse(IMAGE_BASE).buildUpon().appendPath(SIZE);
+        Uri.Builder builder = Uri.parse(IMAGE_BASE).buildUpon().appendPath(IMAGE_SIZE);
         for (String token : imagePath.split(IMAGE_PATH_SEPARATOR)) {
             builder.appendPath(token);
         }

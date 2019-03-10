@@ -32,7 +32,6 @@ import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int NUMBER_OF_COLUMNS = 2;
     private RecyclerView movieListView;
     private MovieAdapter movieAdapter;
     private ProgressBar progressBar;
@@ -116,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(MoviesGridViewModel.class);
         progressBar = findViewById(R.id.progress_circular);
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS);
+        int gridColumns = getResources().getInteger(R.integer.grid_columns);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, gridColumns);
         movieListView = findViewById(R.id.list_view);
         movieListView.setLayoutManager(gridLayoutManager);
         movieAdapter = new MovieAdapter(this, movieClickListener);
